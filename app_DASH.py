@@ -9,7 +9,7 @@ from utils.constants import Constants
 import math
 import predict
 from werkzeug.utils import secure_filename
-
+import pandas as pd
 import os
 import warnings
 warnings.filterwarnings("ignore")
@@ -83,27 +83,11 @@ html.H4("Seleziona la lingua"),
                   dbc.Button("Get job recommendations", style={"text-align": "center"}, id="recommendation-btn",
                              n_clicks=0),
 
-                  html.A("Leggi dettagli", id="a-modal-0", href="#modal-description-0", n_clicks=0),
-                  html.A("Leggi dettagli", id="a-modal-1", href="#modal-description-1", n_clicks=0),
-                  html.A("Leggi dettagli", id="a-modal-2", href="#modal-description-2", n_clicks=0),
-                  html.A("Leggi dettagli", id="a-modal-3", href="#modal-description-3", n_clicks=0),
-                  dbc.Modal([
-                      dbc.ModalHeader(dbc.ModalTitle("Dettagli")),
-                      dbc.ModalBody("aaa")
-                  ], size="modal-xl", id="modal-description-0", is_open=False, style={"display": "none"}),
 
-                  dbc.Modal([
-                      dbc.ModalHeader(dbc.ModalTitle("Dettagli")),
-                      dbc.ModalBody("bbb")
-                  ], size="modal-xl", id="modal-description-1", is_open=False, style={"display": "none"}),
-                  dbc.Modal([
-                      dbc.ModalHeader(dbc.ModalTitle("Dettagli")),
-                      dbc.ModalBody("ccc")
-                  ], size="modal-xl", id="modal-description-2", is_open=False, style={"display": "none"}),
-                  dbc.Modal([
-                      dbc.ModalHeader(dbc.ModalTitle("Dettagli")),
-                      dbc.ModalBody("ddd")
-                  ], size="modal-xl", id="modal-description-3", is_open=False, style={"display": "none"})
+
+
+
+
 
                   ], style={"display": "none"})
 
@@ -112,7 +96,8 @@ html.H4("Seleziona la lingua"),
 
 )
 
-jobs_recommended = dcc.Loading(id="loading-recommendations", children=[html.Div(id="recommendations")], type="default")
+jobs_recommended = dcc.Loading(id="loading-recommendations",
+                               children=[html.Div(id="recommendations"),html.Div([html.Button("Download Text", id="btn-download-txt"),dcc.Download(id="download-text")],style={"display":"none"})], type="default")
 
 app.layout = html.Div([navbar, uploader, html.Br(), jobs_recommended])
 
@@ -127,7 +112,8 @@ def update_output(contents, filename, value):
 
         if 'pdf' in content_type:
             decoded_resume = base64.b64decode(content_string)
-
+            global name
+            name=filename[0]
             resume_uploaded = os.path.join(os.getcwd(), filename[0])
 
 
@@ -200,8 +186,7 @@ def toggle_collapse(n, is_open):
 def get_recommendation(n):
     if n:
 
-
-
+        global pdfnamepath
         pdfnamepath= ctrl.get_filenam()
 
 
@@ -209,72 +194,47 @@ def get_recommendation(n):
 
         language =ctrl.get_languag()
 
-
-
+        global skillsner,category
         category, skillsner = predict.main(pdfnamepath, language)
+
         skillsner=[i for i in skillsner if i!='']
         print('skillsner.....', str(skillsner))
-
+        global df
+        df = pd.DataFrame({"skills": skillsner}) #, "category": category
         os.remove(pdfnamepath)
 
         card = dbc.Card([
             dbc.CardHeader(category.capitalize(),
                            style={"background-color": "#5cb85c", "color": "white", "font-weight": "bold"}),
+
+          html.Div([
+            html.Button("Download Text", id="btn-download-txt"),
+            dcc.Download(id="download-text")
+        ]),
             dbc.CardBody([
                 html.Ul(id='my-list', children=[html.Li(i) for i in skillsner])
 
             ]
             )
         ], color="success", outline=True,)
+        # btn=html.Div([
+        #     html.Button("Download Text", id="btn-download-txt"),
+        #     dcc.Download(id="download-text")
+        # ])
 
-        return html.Div(card,style={"margin-left":"25%","margin-right":"25%"})
+        return html.Div([card,html.Br()],style={"margin-left":"25%","margin-right":"25%"})
     return html.Div()
 
-
 @app.callback(
-    Output("modal-description-0", "is_open"),
-    Input("a-modal-0", "n_clicks"),
-    State("modal-description-0", "is_open"),
+    Output("download-text", "data"),
+    Input("btn-download-txt", "n_clicks"),
+    prevent_initial_call=True,
 )
-def toggle_modal(n, is_open):
-    if n:
-        return not is_open
-    return is_open
+def func(n_clicks):
+   return  dcc.send_data_frame(df.to_excel, name+"-"+category+".xlsx", sheet_name=category) #dcc.send_data_frame(df.to_csv, name+"-"+category+".csv") # ";".join(skillsner)
 
-
-@app.callback(
-    Output("modal-description-1", "is_open"),
-    Input("a-modal-1", "n_clicks"),
-    State("modal-description-1", "is_open"),
-)
-def toggle_modal(n, is_open):
-    if n:
-        return not is_open
-    return is_open
-
-
-@app.callback(
-    Output("modal-description-2", "is_open"),
-    Input("a-modal-2", "n_clicks"),
-    State("modal-description-2", "is_open"),
-)
-def toggle_modal(n, is_open):
-    if n:
-        return not is_open
-    return is_open
-
-
-@app.callback(
-    Output("modal-description-3", "is_open"),
-    Input("a-modal-3", "n_clicks"),
-    State("modal-description-3", "is_open"),
-)
-def toggle_modal(n, is_open):
-    if n:
-        return not is_open
-    return is_open
 
 
 if __name__ == "__main__":
-    #app.run_server(debug=True, port=8054)
-    app.run_server(host='0.0.0.0',port=8054)
+    app.run_server(debug=True, port=8052)
+    #app.run_server(debug=True,host='0.0.0.0',port=8054)
