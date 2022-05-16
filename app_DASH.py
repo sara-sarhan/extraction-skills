@@ -97,7 +97,7 @@ html.H4("Seleziona la lingua"),
 )
 
 jobs_recommended = dcc.Loading(id="loading-recommendations",
-                               children=[html.Div(id="recommendations"),html.Div([html.Button("Download Text", id="btn-download-txt"),dcc.Download(id="download-text")],style={"display":"none"})], type="default")
+                               children=[html.Div(id="recommendations"),html.Div([dbc.Button("Download skills in Excel file", id="btn-download-txt"),dcc.Download(id="download-text")],style={"display":"none"})], type="default")
 
 app.layout = html.Div([navbar, uploader, html.Br(), jobs_recommended])
 
@@ -208,9 +208,9 @@ def get_recommendation(n):
                            style={"background-color": "#5cb85c", "color": "white", "font-weight": "bold"}),
 
           html.Div([
-            html.Button("Download Text", id="btn-download-txt"),
+            dbc.Button("Download skills in Excel file", id="btn-download-txt"),
             dcc.Download(id="download-text")
-        ]),
+        ],style={"text-align":"center","margin-top":"2%"}),
             dbc.CardBody([
                 html.Ul(id='my-list', children=[html.Li(i) for i in skillsner])
 
