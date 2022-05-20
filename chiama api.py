@@ -1,4 +1,18 @@
 import requests
+import requests
+
+url = "http://127.0.0.1:8051//fileupload"
+
+payload={}
+files=[
+  ('file',('cuoco.pdf',open('/C:/Users/sarhan.CORP/Documents/KEREZU/CODE SERVIZI PYTHON/code skill from cv/cuoco.pdf','rb'),'application/pdf')),
+  ('file',('Meccanico.pdf',open('/C:/Users/sarhan.CORP/Documents/KEREZU/CODE SERVIZI PYTHON/code skill from cv/Meccanico.pdf','rb'),'application/pdf'))
+]
+headers = {}
+
+response = requests.request("POST", url, headers=headers, data=payload, files=files)
+
+print(response.text)
 
 ## chima api lancia
 url = "http://127.0.0.1:8051//fileupload"
