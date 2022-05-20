@@ -10,15 +10,25 @@ from datetime import date
 import predict
 import pandas as pd
 import os
-import io
 import warnings
 warnings.filterwarnings("ignore")
-ctrl = Controller()
-
+## Diskcache
+import flask
+import diskcache
+import dash_labs
+from dash.long_callback import DiskcacheLongCallbackManager
+cache = diskcache.Cache("./cache")
+long_callback_manager =DiskcacheLongCallbackManager(cache)
+server = flask.Flask(__name__)
+#app = dash.Dash(__name__)
 app = dash.Dash(
-    external_stylesheets=[dbc.themes.BOOTSTRAP]
+    server=server,
+    external_stylesheets=[dbc.themes.BOOTSTRAP],
+    serve_locally=False,
 )
 
+
+ctrl = Controller()
 navbar = dbc.Navbar(
     dbc.Container(
         [
@@ -118,11 +128,12 @@ jobs_recommended = dcc.Loading(id="loading-recommendations",
 app.layout = html.Div([navbar, uploader, html.Br(), jobs_recommended])
 
 
-@app.callback(Output('output-upload', 'children'),
-              Input('upload-resume', 'contents'),
-              State('upload-resume', 'filename'),
-              State('upload-resume', 'last_modified'))
-def update_output(list_of_contents, list_of_names, list_of_dates):
+@app.callback(
+    output= Output('output-upload', 'children'),
+    inputs=    [Input('upload-resume', 'contents'),
+              State('upload-resume', 'filename')]
+           )
+def update_output(list_of_contents, list_of_names):
     if list_of_contents is not None:
         content_type, content_string = list_of_contents[0].split(',')
         # ctrl.set_filename (list_of_names)
@@ -200,8 +211,8 @@ def update_output(list_of_contents, list_of_names, list_of_dates):
 
 #
 
-@app.callback(Output('output-resume', 'children'),
-              [
+@app.callback(output= Output('output-resume', 'children'),
+                   inputs= [
                Input('radio_items', 'value'),])
 def update_items(value):
     if value is not None:
@@ -244,9 +255,9 @@ def update_items(value):
 
         
 @app.callback(
-    Output("resume-collapse", "is_open"),
-    [Input("collapse-button", "n_clicks")],
-    [State("resume-collapse", "is_open")],
+    output=    Output("resume-collapse", "is_open"),
+    inputs=
+    [Input("collapse-button", "n_clicks"), State("resume-collapse", "is_open")],
 )
 def toggle_collapse(n, is_open):
     if n:
@@ -256,8 +267,9 @@ def toggle_collapse(n, is_open):
 
 
 @app.callback(
+    output=
     Output(component_id='selected_directory', component_property='children'),
-    Input(component_id='open_directory', component_property='n_clicks'),
+    inputs=Input(component_id='open_directory', component_property='n_clicks'),
 )
 def set_folder(n):
     if n:
@@ -279,8 +291,11 @@ def set_folder(n):
 
 
 @app.callback(
-    [Output("recommendations", "children"),Output("modal", "is_open")],
-    [Input("recommendation-btn", "n_clicks"),Input("close1", "n_clicks"),State("modal", "is_open")],
+
+    output=[Output("recommendations", "children"),Output("modal", "is_open")],
+    inputs= [Input("recommendation-btn", "n_clicks"),Input("close1", "n_clicks"),State("modal", "is_open")],
+
+
 )
 def get_recommendation(n,n2, is_open):
     directory = ctrl.folder
@@ -311,21 +326,27 @@ def get_recommendation(n,n2, is_open):
 
         path=os.path.join(*folder)
 
+
+
         with pd.ExcelWriter(path, engine='xlsxwriter') as writer1:
-   
+
          for   pdfnamepath in  files :
             category, skillsner = predict.main(pdfnamepath, language)
-            
+
 
             skillsner=[i for i in skillsner if i!='']
             print('skillsner.....', str(skillsner))
             global df
             df = pd.DataFrame({"skills": skillsner}) #, "category": category
-            df.to_excel(writer1, sheet_name = pdfnamepath+' _jobs_'+category, index = False)
-            list_file_skiss.append( pdfnamepath + ' _jobs_' + category)
+            namesheet=pdfnamepath+' _jobs_'+category
+            # n=len(pdfnamepath+' _jobs_'+category)
+            # while len(pdfnamepath+' _jobs_'+category)>=31:
+            #     namesheet=namesheet[1:n-1]
+            df.to_excel(writer1, sheet_name = category, index = False)
+
 
             os.remove(pdfnamepath)
-    
+
             card = dbc.Card(
                 [
                 dbc.CardHeader(category.capitalize(),
@@ -335,12 +356,14 @@ def get_recommendation(n,n2, is_open):
 
                     ]
                     )
-    
-             
+
+
             ], color="success", outline=True,)
 
             cards.append( html.Div([card, html.Br()], style={"margin-left": "25%", "margin-right": "25%"}))
-        ctrl.set_list_file_skiss( list_file_skiss)
+         df = pd.DataFrame({"name": files}) #, "category": category
+         df.to_excel(writer1, sheet_name='name of files curriculum', index=False)
+
         writer1.save()
 
 
