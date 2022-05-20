@@ -10,12 +10,21 @@ class Controller:
 
         self._resume_txt = ""
         self.ln = ""
+        self.list_of_contents = {}
+        self.list_file_skiss= {}
+        self.folder = None
 
 
 
 
     def set_filename(self, filename):
         self._resume_txt = filename
+    def set_list_file_skiss(self, list_file_skiss):
+        self.list_file_skiss = list_file_skiss
+        
+    def set_contents(self, contents):
+     
+        self.list_of_contents =contents
 
     def set_language(self, language):
         self.ln = language
@@ -25,6 +34,12 @@ class Controller:
 
     def get_languag(self):
         return self.ln
+    def get_contents(self):
+        return self.list_of_contents
+    
+    def get_list_file_skisss(self):
+        return self.list_file_skiss
+
 
 
 
