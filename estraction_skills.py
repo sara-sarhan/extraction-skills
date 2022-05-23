@@ -35,7 +35,7 @@ def word_Sentece(pdfnamepath,stop,nlpRemove,namesprogramming):
                frasi.extend(testo)
     resume_sections1 = []
     labelentity=[]
-    entitydlete= ['CARDINAL','DATE', "PER",'EVENT', 'FAC','GPE','LAW','LOC', 'MONEY','NORP',
+    entitydlete= ['CARDINAL', "PER",'EVENT', 'FAC','GPE','LAW','LOC', 'MONEY','NORP', # DATE
      'ORDINAL', 'ORG','PERCENT','PERSON', 'QUANTITY',
      'TIME','WORK_OF_ART']
     programmingskills=[]
@@ -195,7 +195,7 @@ def pdf_to_html(pdfnamepath,stop,nlpRemove,namesprogramming):
     print("START pdf_to_html")
     filePDF = pdfnamepath #("input directory; your pdf file:   ")
     path=os.getcwd() 
-    fileHTML = os.path.join(path,'dOPUT.html')
+    fileHTML = os.path.join(path,filePDF+'dOPUT.html')
     convertedPDF = convert( filePDF)
     fileConverted = open(fileHTML, "wb")
     fileConverted.write(convertedPDF)
@@ -217,7 +217,7 @@ def pdf_to_html(pdfnamepath,stop,nlpRemove,namesprogramming):
                frasi.extend(testo)
     resume_sections1 = []
     labelentity=[]
-    entitydlete= ['CARDINAL','DATE', "PER",'EVENT', 'FAC','GPE','LAW','LOC', 'MONEY','NORP',
+    entitydlete= ['CARDINAL', "PER",'EVENT', 'FAC','GPE','LAW','LOC', 'MONEY','NORP', #DATE
      'ORDINAL', 'ORG','PERCENT','PERSON', 'QUANTITY',
      'TIME','WORK_OF_ART']
     programmingskills=[]
@@ -341,13 +341,15 @@ def extract_skills_npl(resume_sections,stop,namesprogramming,nlpRemove,listjob,l
   verb=[]
   sentece=[]
   endold=0
-  oldtoken=''
+
+
   if doc:
       idx=0
+
       for token in doc:
         idx+=1  
         # print(token.pos_,token.text)
-    
+
         if token.pos_ == "NOUN" or token.pos_ == "VERB" : #or token.pos_=='ADJ':
             start= token.idx  # Start position of token
             end = token.idx + len(token)  # End position 
@@ -358,13 +360,13 @@ def extract_skills_npl(resume_sections,stop,namesprogramming,nlpRemove,listjob,l
                # distanza verbo e noun poca al massimo tra verbo e parola ci può stara un adj oa o poco altro 
           
             if len(verb)>0  and   (-endold +start<= 3 or endold==0) :
-                words.append((token.text, start, end, token.pos_,-endold +start))
+
                 
                 
                 sentece.append( token.text ) # token.text
                 
                 endold= end
-                oldtoken=token.pos_
+                #oldtoken=token.pos_
                 # se ho 2 verbi sono 2 frrasi e si spezzano
                 if " ".join(sentece).strip()!='' and len(sentece)>=2 and len(verb)>1:
                    sentece.remove( token.text)
@@ -574,7 +576,7 @@ def eng_skills(pdfnamepath,formato='pdf',pathmode=''):
     
     listjob=[ i.strip().replace('(','').replace(')','') for i in set(listjob +lista) if len(i)>4]
     listjob.remove("product")
-    tipojob= extractjobb(listsentece,stop,listjob)
+    #tipojob= extractjobb(listsentece,stop,listjob)
     
     if pathmode!='':
         print(pathmode)
