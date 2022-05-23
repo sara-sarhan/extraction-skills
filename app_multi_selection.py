@@ -17,14 +17,16 @@ import flask
 import diskcache
 import dash_labs
 from dash.long_callback import DiskcacheLongCallbackManager
-cache = diskcache.Cache("./cache")
-long_callback_manager =DiskcacheLongCallbackManager(cache)
+from waitress import serve
+
+# cache = diskcache.Cache("./cache")
+# long_callback_manager =DiskcacheLongCallbackManager(cache)
 server = flask.Flask(__name__)
 #app = dash.Dash(__name__)
 app = dash.Dash(
     server=server,
     external_stylesheets=[dbc.themes.BOOTSTRAP],
-    serve_locally=False,
+    #serve_locally=False,
 )
 
 
@@ -376,5 +378,6 @@ def get_recommendation(n,n2, is_open):
 
 
 if __name__ == "__main__":
-    app.run_server(debug=True, port=8052)
+    #app.run_server(debug=True, port=8052)
     #app.run_server(debug=True,host='0.0.0.0',port=8054)
+    serve(app.server, host="0.0.0.0", port=8052)
