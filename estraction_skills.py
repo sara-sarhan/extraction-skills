@@ -87,7 +87,7 @@ def convert(fname):
  
     interpreter = PDFPageInterpreter(manager, converter)  
     infile = open(fname, 'rb')
- 
+    print("fname...",fname)
     for page in PDFPage.get_pages(infile, pagenums,caching=caching, check_extractable=False):
         interpreter.process_page(page)
  
@@ -107,25 +107,7 @@ def convert(fname):
 
 
 
-def normalize(text, lowercase, remove_stopwords, remove_punctuation,nlp,stops):
 
-    if lowercase:
-        text = text.lower()
-    text = nlp(text)
-
-    if remove_punctuation:
-        text = [t for t in text if t.text not in string.punctuation]
-
-    lemmatized = list()
-    print(text)
-    for word in text:
-        lemma = word.lemma_.strip()
-        print(lemma)
-        if lemma and lemma!='':
-            if not remove_stopwords or (remove_stopwords and lemma not in stops):
-                lemmatized.append(lemma)
-
-    return " ".join(lemmatized)
 
 def ner(pdfnamepath):
 
@@ -210,6 +192,7 @@ def ner(pdfnamepath):
 
 
 def pdf_to_html(pdfnamepath,stop,nlpRemove,namesprogramming):
+    print("START pdf_to_html")
     filePDF = pdfnamepath #("input directory; your pdf file:   ")
     path=os.getcwd() 
     fileHTML = os.path.join(path,'dOPUT.html')
@@ -238,6 +221,13 @@ def pdf_to_html(pdfnamepath,stop,nlpRemove,namesprogramming):
      'ORDINAL', 'ORG','PERCENT','PERSON', 'QUANTITY',
      'TIME','WORK_OF_ART']
     programmingskills=[]
+    namesprogramming.remove('p')
+    namesprogramming.remove('J')
+    namesprogramming.remove('G')
+    namesprogramming.remove('es')
+    namesprogramming.remove('FL')
+    namesprogramming.remove('Io')
+    namesprogramming.remove('K')
 
     for t in frasi:
          for s in namesprogramming:
@@ -270,8 +260,10 @@ def pdf_to_html(pdfnamepath,stop,nlpRemove,namesprogramming):
          if testskill!='' and len(span_list)==0 and len(testskill)>1 and testskill not in stop:
             resume_sections1.append(testskill.lower())
     
-    os.remove(fileHTML)    
-    print("programmingskills",programmingskills)
+    os.remove(fileHTML)
+    print("END pdf_to_html")
+   # print("programmingskills",programmingskills)
+
     return resume_sections1,programmingskills
 
  
@@ -282,7 +274,8 @@ def pdf_to_html(pdfnamepath,stop,nlpRemove,namesprogramming):
 
 
 def extractjobb(resume_sections,stop,listjob)  :
-    tipojob=[] 
+    tipojob=[]
+    print("START extractjobb")
     for testskill in resume_sections:
   
      
@@ -295,7 +288,7 @@ def extractjobb(resume_sections,stop,listjob)  :
                   re.finditer(fr"\b{job}\b",testskill )]
          if span_list :
              tipojob.append(job)
-             print(job,testskill)
+
              break
     # conta=[ tipojob.count(i) for i in set(tipojob) ]  
     # labelpossible=[i for i in set(tipojob) if tipojob.count(i)==max(conta)]
@@ -310,8 +303,9 @@ def extractjobb(resume_sections,stop,listjob)  :
              span_list=[i for i in set(job.split()).intersection(set(testskill.split()))   if i not in stop]    
              if span_list :
                  tipojob.append(job)
-                 print(job)
+
                  break
+    print("END extractjobb")
     return tipojob
         
 def extract_skills_npl(resume_sections,stop,namesprogramming,nlpRemove,listjob,listacompetenze,worddelete):
@@ -319,7 +313,7 @@ def extract_skills_npl(resume_sections,stop,namesprogramming,nlpRemove,listjob,l
  unionskills=[]   
  skillmach=[]
 
-
+ print("START extract_skills_npl")
  for testskill in resume_sections:
   span_list=[]
   for competenze in listacompetenze: #[ ,'responsabile della','acquisito esperienza','acquisito una collaudata esperienza',
@@ -363,29 +357,28 @@ def extract_skills_npl(resume_sections,stop,namesprogramming,nlpRemove,listjob,l
             
                # distanza verbo e noun poca al massimo tra verbo e parola ci può stara un adj oa o poco altro 
           
-            if len(verb)>0  and   (-endold +start<= 6 or endold==0) :
+            if len(verb)>0  and   (-endold +start<= 3 or endold==0) :
                 words.append((token.text, start, end, token.pos_,-endold +start))
                 
                 
-                sentece.append( token.lemma_ ) # token.text
+                sentece.append( token.text ) # token.text
                 
                 endold= end
                 oldtoken=token.pos_
                 # se ho 2 verbi sono 2 frrasi e si spezzano
                 if " ".join(sentece).strip()!='' and len(sentece)>=2 and len(verb)>1:
-                   sentece.remove( token.lemma_)
+                   sentece.remove( token.text)
                    
                    verbo=verb[-1]
                    verb=[verbo]
                    if len(sentece)>=2:
-                       print('found skills 2 verbbi',sentece)
+
                        unionskills.append(" ".join(sentece))
-                   sentece=[ token.lemma_]
+                   sentece=[ token.text]  #[ token.lemma_]
                  
       if len(verb)==1  and " ".join(sentece).strip()!='' and len(sentece)>1:
           unionskills.append(" ".join(sentece).strip())
-          print('found skills',sentece)
- 
+ print("END extract_skills_npl")
  return unionskills ,skillmach
 
 def cosine_similarity(v1, v2):
@@ -396,7 +389,7 @@ def cosine_similarity(v1, v2):
      return np.dot(v1, v2) / (mag1 * mag2)
  
 def fasttext_skills(unionskills,uniqueskills,namesprogramming,model):
-  
+    print ("START fasttext_skills")
     candidate_skills_fasttext=[]
     candidate_skills_eco=[]
     for word  in unionskills:
@@ -419,7 +412,7 @@ def fasttext_skills(unionskills,uniqueskills,namesprogramming,model):
                                candidate_skills_fasttext.append(word)
                                candidate_skills_eco.append((skills,score_skill))
                                break
-                         
+    print("END fasttext_skills")
     return  candidate_skills_fasttext,candidate_skills_eco
 
 
@@ -488,7 +481,7 @@ def ita_skills(pdfnamepath,formato="pdf",pathmode=''):
 
     
     listacompetenze=['skills','addetto al','addetta al','specializzato in','specializzata in',"conoscenza","competenze","capacità",'predisposizione al',"specializzato nell","specializzata nell"]
-    worddelete=['capacità e competenze personali',"capacità di lettura  capacità di scrittura  capacità di espressione orale","capacità di lettura",  "capacità di scrittura", "capacità di espressione orale", 'capacità di','competenze personali','competenze informatiche','capacità e competenze informatiche','capacità e competenze']
+    worddelete=['capacità e competenze personali','patente guida',"capacità di lettura  capacità di scrittura  capacità di espressione orale","capacità di lettura",  "capacità di scrittura", "capacità di espressione orale", 'capacità di','competenze personali','competenze informatiche','capacità e competenze informatiche','capacità e competenze']
     skills,skillmach=  extract_skills_npl(listsentece,stop,namesprogramming,nlpRemove,listjob,listacompetenze,worddelete)
     
     tipojob= extractjobb(listsentece,stop,listjob)
