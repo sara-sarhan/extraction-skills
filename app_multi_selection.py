@@ -14,9 +14,7 @@ import warnings
 warnings.filterwarnings("ignore")
 ## Diskcache
 import flask
-import diskcache
-import dash_labs
-from dash.long_callback import DiskcacheLongCallbackManager
+
 from waitress import serve
 
 # cache = diskcache.Cache("./cache")
@@ -218,6 +216,7 @@ def update_output(list_of_contents, list_of_names):
                Input('radio_items', 'value'),])
 def update_items(value):
     if value is not None:
+        ctrl.folder = None
         diz= ctrl.get_contents()
         content_string=diz[value]
         resume_card = dbc.Card([
@@ -275,14 +274,26 @@ def toggle_collapse(n, is_open):
 )
 def set_folder(n):
     if n:
+        # import wx
+        #
+        # app = wx.PySimpleApp()
+        # dialog = wx.DirDialog(None, "Choose a directory:", style=wx.DD_DEFAULT_STYLE | wx.DD_NEW_DIR_BUTTON)
+        # if dialog.ShowModal() == wx.ID_OK:
+        #     print(dialog.GetPath())
+        #     directory=dialog.GetPath()
+        # dialog.Destroy()
         import tkinter
         from tkinter import filedialog
 
         root = tkinter.Tk()
-        root.withdraw()
+        #root.withdraw()
+
         directory = filedialog.askdirectory()
+
+       # root.mainloop()
         root.destroy()
         print(directory)
+      
         ctrl.folder=directory
 
         return    html.H5("Folder selected: " +directory,
@@ -309,9 +320,10 @@ def get_recommendation(n,n2, is_open):
     if n and directory is not None:
 
 
+
         global pdfnamepath,name
         files= list(ctrl.get_contents().keys())
-
+        print('number cv', len(files))
 
 
 
@@ -380,4 +392,5 @@ def get_recommendation(n,n2, is_open):
 if __name__ == "__main__":
     #app.run_server(debug=True, port=8052)
     #app.run_server(debug=True,host='0.0.0.0',port=8054)
-    serve(app.server, host="0.0.0.0", port=8052)
+    ctrl.folder=None
+    serve(app.server, host="0.0.0.0",port=8050)

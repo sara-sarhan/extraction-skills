@@ -8,6 +8,7 @@ from pdfminer.layout import LAParams
 from pdfminer.pdfpage import PDFPage
 from pdfminer.pdfinterp import PDFPageInterpreter, PDFResourceManager
 from pdfminer.converter import HTMLConverter
+from pdfminer.high_level import extract_pages
 import io
 import  fasttext
 import numpy as np
@@ -195,6 +196,7 @@ def pdf_to_html(pdfnamepath,stop,nlpRemove,namesprogramming):
     print("START pdf_to_html")
     filePDF = pdfnamepath #("input directory; your pdf file:   ")
     path=os.getcwd() 
+    print('number page',filePDF,len(list(extract_pages(pdfnamepath))))
     fileHTML = os.path.join(path,filePDF+'dOPUT.html')
     convertedPDF = convert( filePDF)
     fileConverted = open(fileHTML, "wb")
