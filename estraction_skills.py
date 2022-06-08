@@ -195,8 +195,27 @@ def ner(pdfnamepath):
 def pdf_to_html(pdfnamepath,stop,nlpRemove,namesprogramming):
     print("START pdf_to_html")
     filePDF = pdfnamepath #("input directory; your pdf file:   ")
-    path=os.getcwd() 
-    print('number page',filePDF,len(list(extract_pages(pdfnamepath))))
+    path=os.getcwd()
+    page_num=len(list(extract_pages(pdfnamepath)))
+    # print('number page',filePDF,page_num)
+
+    import json
+    with open('json_data_info.json') as json_file:
+        data = eval(json.load(json_file))
+        page_numold = int(data['number mean pages'])
+        if page_numold >0:
+            data['number mean pages'] = (page_numold + page_num) / 2
+
+        else:
+            data['number mean pages'] =page_num
+        import json
+
+
+        json_string = json.dumps(data)
+
+        # Directly from dictionary
+        with open('json_data_info.json', 'w') as outfile:
+            json.dump(json_string, outfile)
     fileHTML = os.path.join(path,filePDF+'dOPUT.html')
     convertedPDF = convert( filePDF)
     fileConverted = open(fileHTML, "wb")
@@ -278,14 +297,16 @@ def pdf_to_html(pdfnamepath,stop,nlpRemove,namesprogramming):
 def extractjobb(resume_sections,stop,listjob)  :
     tipojob=[]
     print("START extractjobb")
+  
     for testskill in resume_sections:
   
      
       
      if len(tipojob)<1:
+         
       for idx,job in enumerate(listjob):
      
-       
+
          span_list = [(match.start(), match.end()) for match in
                   re.finditer(fr"\b{job}\b",testskill )]
          if span_list :
@@ -294,24 +315,12 @@ def extractjobb(resume_sections,stop,listjob)  :
              break
     # conta=[ tipojob.count(i) for i in set(tipojob) ]  
     # labelpossible=[i for i in set(tipojob) if tipojob.count(i)==max(conta)]
-    if len(tipojob)<1:
-        for testskill in resume_sections:
-      
-         
-         if len(tipojob)<1:
-          for idx,job in enumerate(listjob):
-             
-           
-             span_list=[i for i in set(job.split()).intersection(set(testskill.split()))   if i not in stop]    
-             if span_list :
-                 tipojob.append(job)
-
-                 break
+ 
     print("END extractjobb")
     return tipojob
         
 def extract_skills_npl(resume_sections,stop,namesprogramming,nlpRemove,listjob,listacompetenze,worddelete):
- words=[]        
+
  unionskills=[]   
  skillmach=[]
 
@@ -336,7 +345,7 @@ def extract_skills_npl(resume_sections,stop,namesprogramming,nlpRemove,listjob,l
           if testskill[span_list[0][0]:].strip()!='' and span_list and  testskill[span_list[0][0]:] not in stop and testskill not in  skillmach and len(testskill[span_list[0][0]:].split())>1 and testskill[span_list[0][0]:] not in worddelete:
              skillmach.append(testskill[span_list[0][0]:] ) #
  
-  
+  print("testskill",testskill)
   doc = nlpRemove(testskill) #clean_txt2(testskill,nlpRemove,stop)
   start=0
   end=0
@@ -438,7 +447,7 @@ def ita_skills(pdfnamepath,formato="pdf",pathmode=''):
     for i in ['y)','C','D','T','L','E','F','B','S']:
         namesprogramming.remove(i)
         
-        
+ 
     full_occupations = pd.read_csv("occupation_full.csv", encoding='utf-8')
     occupation_it = pd.read_csv("occupations_it.csv", encoding='utf-8')
     titles_eng= pd.read_csv("job_skills.csv", encoding='utf-8') 
@@ -612,3 +621,147 @@ def eng_skills(pdfnamepath,formato='pdf',pathmode=''):
     print([i for i in skills if i not in candidate_skills_fasttext])
     print(tipojob)
     return  allskills,tipojob
+
+
+'''versione italiana'''
+## italiano
+
+def ita_estrcation_jobs(sentece):
+    listjob=pd.read_csv("jobs_title.csv", encoding='utf-8',delimiter=';')['jobs'].tolist()
+    listjob.sort() 
+    tipojob=[]
+    for idx,job in enumerate(listjob):
+    
+        
+             
+
+              
+
+       
+           
+           span_list = [(match.start(), match.end()) for match in
+                      
+                     re.finditer(fr"\b{job}\b",sentece )]
+           if span_list and job not in tipojob:
+               tipojob.append(job)
+               # print(job)
+               
+    if len(tipojob) ==0 and ('lavoro' not in sentece or 'ricercatore' not in sentece):
+     for study in ['corso formazione','corso', 'attestato conseguito','stage','laurea','facolatà','facolata','scuola','università','liceo','diploma','dottorato','master','istituto technico']:
+         span_list = [(match.start(), match.end()) for match in
+                  re.finditer(fr"\b{study}\b",sentece )]
+         if span_list and study not in tipojob :
+             tipojob.append(study)
+             print(study)
+
+             break
+
+               # break
+  
+    print("tipojob",tipojob)
+  
+
+
+    return tipojob
+def esxtractin_progra_skills(frase):
+    print("strat extarct programming skills")
+    skills = pd.read_csv("skills.csv", encoding='utf-8')
+    prog=list(skills.columns)
+    filename = os.path.join(os.getcwd(), 'programming-languages-corrected.csv')
+    dffull = pd.read_csv(filename,sep=';', encoding = "ISO-8859-1")
+    with open('skills_cv.txt') as f:
+         skills_cv = f.read().splitlines() 
+    namesprogramming=list(set(dffull['ï»¿name'].tolist()+prog+skills_cv)) 
+    for i in ['y)','C','D','T','L','E','F','B','S']:
+        namesprogramming.remove(i)
+    programmingskills=[]
+    namesprogramming.append('ibatis')
+    namesprogramming.extend(["Eclipse", "Java" "J2EE", "HTML", "JSP"," JAX RPC", "JAXB", "CSS3", "JavaScript",  "jQuery", "Spring MVC", "Hibernate"," RESTful web services", "Apache Tomcat", "Cucumber", "Cassandra", "Junit", "Jenkins", "Maven", "GitHub", "XML", "Log4j", "EJB", "MySQL", "Ajax"])
+    namesprogramming.remove('p')
+    namesprogramming.remove('J')
+    namesprogramming.remove('G')
+    namesprogramming.remove('es')
+    namesprogramming.remove('FL')
+    namesprogramming.remove('Io')
+    namesprogramming.remove('K') 
+  
+    for s in namesprogramming:
+                s = s.replace('+', ' plus').replace('++', 'plus').replace('(',' ').replace(')',' ').replace('* ',' ').replace('+2',' ').strip()
+             
+                span_list = [(match.start(), match.end()) for match in
+                             re.finditer(fr"\b{s}\b", frase)]
+                if span_list  and s not in programmingskills and s not in ['y)','C','D','T','L','E','F','B','S'] :
+                    skill=frase[span_list[0][0]:span_list[0][1]]
+                    if skill not in programmingskills:
+                     programmingskills.append(s)
+    print("end extarct programming skills")
+    programmingskills=[i for i in programmingskills if i.strip()!='']
+    return programmingskills
+   
+        
+def ita_skills_formsentece(frasi,model):
+    
+
+    from spacy.lang.it.stop_words import STOP_WORDS
+    stop = list(spacy.lang.it.stop_words.STOP_WORDS)
+    stop.extend(['e','i'])
+   
+        
+    full_occupations = pd.read_csv("occupation_full.csv", encoding='utf-8')
+    # occupation_it = pd.read_csv("occupations_it.csv", encoding='utf-8')
+    # titles_eng= pd.read_csv("job_skills.csv", encoding='utf-8') 
+    # listjob1= occupation_it['preferredLabel'].unique().tolist()+occupation_it['altLabels'].unique().tolist()
+    # listjob=[]
+    # for job in listjob1:
+    #   if type(job)!=float:
+    #     if "/" in job:
+    #         jobs=job.split("/")
+            
+    #         listjob.extend(jobs)
+    #     elif "\n" in job:
+    #           jobs=job.split("\n")
+           
+    #           listjob.extend(jobs)
+    #     else:
+    #         listjob.append(job)
+    # with open('titoloLavori.txt') as f:
+    #     contents = f.read().splitlines() 
+        
+    # listjob.extend(contents)
+    # lista=list(set([word[0:word.find(',')].replace('(','').replace(')','').lower().strip() for word in set(titles_eng['Category'].unique().tolist()+titles_eng['Title'].unique().tolist()) if len(word[0:word.find(',')])>4]))
+    # listjob=list(set(listjob +lista))
+    # listjob.remove("console")
+    # listjob.sort() 
+    # # clean_text2 = list(set(  [" ".join([stemmer_snowball.stem(words) for words in word.strip().split()])  for word in listjob]))  
+    # # clean_text2.sort() 
+    # df = pd.DataFrame({'jobs': listjob})
+    # df['jobs']=df['jobs'].apply(lambda x: x.strip().lower())
+    # df.to_csv('jobs_title.csv',index=False, encoding="utf-8")
+    
+    listjob=pd.read_csv("jobs_title.csv", encoding='utf-8',delimiter=';')['jobs'].tolist()
+    listjob.sort() 
+    full_occupations_skills = full_occupations[['essential_skills', 'optional_skills','isco_group']]
+    full_occupations_skills['essential_skills'] = full_occupations_skills['essential_skills'].apply(lambda x: ','.join(str(x).split('; ')))
+    full_occupations_skills['optional_skills'] = full_occupations_skills['optional_skills'].apply(lambda x: ','.join(str(x).split('; ')))
+    
+    full_occupations_skills_clean = pd.DataFrame({'occupations_skillset': full_occupations_skills['essential_skills']})
+    l=[]
+    spliskills=full_occupations_skills_clean['occupations_skillset'].str.split(',').tolist()
+   
+  
+    l = [x.strip() for lista in spliskills for x in lista if x]
+    uniqueskills=list(set(l))
+    nlpRemove = spacy.load("it_core_news_lg")
+  
+   
+
+    
+    listacompetenze=['diploma','skills','università','addetto al','addetta al','specializzato in','specializzata in',"conoscenza","competenze","capacità",'predisposizione al',"specializzato nell","specializzata nell"]
+    worddelete=['capacità e competenze personali','patente guida',"capacità di lettura  capacità di scrittura  capacità di espressione orale","capacità di lettura",  "capacità di scrittura", "capacità di espressione orale", 'capacità di','competenze personali','competenze informatiche','capacità e competenze informatiche','capacità e competenze']
+    skills,skillmach=  extract_skills_npl(frasi,stop,[],nlpRemove,listjob,listacompetenze,worddelete)
+
+  
+    candidate_skills_fasttext,candidate_skills_eco=fasttext_skills(skills,uniqueskills,[],model)
+    allskills=candidate_skills_fasttext+skillmach
+     
+    return  allskills
