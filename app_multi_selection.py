@@ -12,6 +12,7 @@ import pandas as pd
 import os
 import warnings
 import time
+from pdfminer.high_level import extract_pages
 warnings.filterwarnings("ignore")
 ## Diskcache
 import flask
@@ -464,6 +465,18 @@ def get_skilss(n,n2, is_open):
          for   pdfnamepath in  files :
             tic()
 
+            page_num = len(list(extract_pages(pdfnamepath)))
+            print('number page',pdfnamepath,page_num)
+
+
+
+            page_numold = int(data['number mean pages'])
+            print("page_numold", page_numold)
+            if page_numold > 0:
+                    data['number mean pages'] = (page_numold + page_num) / 2
+
+            else:
+                    data['number mean pages'] = page_num
 
             data['last cv']=pdfnamepath
 

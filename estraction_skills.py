@@ -8,7 +8,7 @@ from pdfminer.layout import LAParams
 from pdfminer.pdfpage import PDFPage
 from pdfminer.pdfinterp import PDFPageInterpreter, PDFResourceManager
 from pdfminer.converter import HTMLConverter
-from pdfminer.high_level import extract_pages
+
 import io
 import  fasttext
 import numpy as np
@@ -73,7 +73,7 @@ def word_Sentece(pdfnamepath,stop,nlpRemove,namesprogramming):
             resume_sections1.append(testskill.lower())
     
  
-    print("programmingskills",programmingskills)
+   # print("programmingskills",programmingskills)
     return resume_sections1,programmingskills
 def convert(fname):
     pagenums = set();
@@ -88,7 +88,7 @@ def convert(fname):
  
     interpreter = PDFPageInterpreter(manager, converter)  
     infile = open(fname, 'rb')
-    print("fname...",fname)
+  #  print("fname...",fname)
     for page in PDFPage.get_pages(infile, pagenums,caching=caching, check_extractable=False):
         interpreter.process_page(page)
  
@@ -196,26 +196,7 @@ def pdf_to_html(pdfnamepath,stop,nlpRemove,namesprogramming):
     print("START pdf_to_html")
     filePDF = pdfnamepath #("input directory; your pdf file:   ")
     path=os.getcwd()
-    page_num=len(list(extract_pages(pdfnamepath)))
-    # print('number page',filePDF,page_num)
 
-    import json
-    with open('json_data_info.json') as json_file:
-        data = eval(json.load(json_file))
-        page_numold = int(data['number mean pages'])
-        if page_numold >0:
-            data['number mean pages'] = (page_numold + page_num) / 2
-
-        else:
-            data['number mean pages'] =page_num
-        import json
-
-
-        json_string = json.dumps(data)
-
-        # Directly from dictionary
-        with open('json_data_info.json', 'w') as outfile:
-            json.dump(json_string, outfile)
     fileHTML = os.path.join(path,filePDF+'dOPUT.html')
     convertedPDF = convert( filePDF)
     fileConverted = open(fileHTML, "wb")
@@ -345,7 +326,7 @@ def extract_skills_npl(resume_sections,stop,namesprogramming,nlpRemove,listjob,l
           if testskill[span_list[0][0]:].strip()!='' and span_list and  testskill[span_list[0][0]:] not in stop and testskill not in  skillmach and len(testskill[span_list[0][0]:].split())>1 and testskill[span_list[0][0]:] not in worddelete:
              skillmach.append(testskill[span_list[0][0]:] ) #
  
-  print("testskill",testskill)
+  #print("testskill",testskill)
   doc = nlpRemove(testskill) #clean_txt2(testskill,nlpRemove,stop)
   start=0
   end=0
