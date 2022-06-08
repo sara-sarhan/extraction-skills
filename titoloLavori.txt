@@ -1,4 +1,47 @@
+impiegato
+direttore
+ricercatore
+liquidatore
+praticante
+apprendista
+apprendistato
+addetto alla manovalanza 
+adattetto al rivevimento 
+consulenza
+adetto 
+adetta
+adetto al ricevimeto
+adetta al ricevimeto
+attività di gestione 
+merchandising
+account
+manager
+educatrice
+educatrore
+segreteria
+consulente
+montatore meccanico 
+collaboratrice
+collaboratore
+venditrice
+educatore
+programmatore
+lavoratore autonomo
+autista
+specialista marketing
+impiegato
+metalmeccanico
+specialista comunicazione
+programmazione  web
+programmazione
+operaio generico
+elettricista
+civilista
+avvocato
+addetto al ricevimento 
 developer
+responsabile del gruppo di ricerca 
+responsabile 
 promoter
 tecnico di cantiere
 addetto stampa
