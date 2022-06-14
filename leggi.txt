@@ -1,1 +1,4 @@
 solo versione italiana 
+
+andare in: https://fasttext.cc/docs/en/crawl-vectors.html
+scriare Italian: cc.it.300.bin metterlo nella cratella model 
